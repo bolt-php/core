@@ -55,4 +55,54 @@ class OrmTest extends DatabaseTestCase
 
         $this->assertIsString($product->title);
     }
+
+    public function testAll(): void
+    {
+        $product = new Product();
+        $product->title = 'Test';
+
+        $product->save();
+
+        $product = new Product();
+        $product->title = 'Test 2';
+
+        $product->save();
+
+        $products = Product::all();
+
+        $this->assertIsArray($products);
+        $this->assertInstanceOf(ActiveModel::class, $products[0]);
+    }
+
+    public function testDelete(): void
+    {
+        $product = new Product();
+        $product->title = 'Test';
+
+        $product->save();
+
+        $products = Product::all();
+
+        $this->assertEquals(1, count($products));
+
+        $product->delete();
+
+        $this->assertEmpty(Product::all());
+    }
+
+    public function testUpdate(): void
+    {
+        $product = new Product();
+        $product->title = 'Test';
+
+        $product->save();
+
+        $product->title = 'Test 2';
+        $product->save();
+
+        $products = Product::all();
+
+        $this->assertEquals(1, count($products));
+        $this->assertEquals($products[0]->title, 'Test 2');
+    }
 }
