@@ -18,7 +18,7 @@ function createApp(array $config = [])
         'TEST_KEY' => 'tests',
     ];
 
-    $base_config = array_merge_recursive($base_config, $config);
+    $base_config = array_merge($base_config, $config);
 
     $app = TestApplication::getInstance();
 
