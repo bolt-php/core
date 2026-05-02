@@ -128,4 +128,20 @@ class PathTest extends TestCase
         $this->assertTrue($app->path->exists('@root/Unit/PathTest.php'));
         $this->assertFalse($app->path->exists('@root/Unit/NonExistent.php'));
     }
+
+    public function testLinux()
+    {
+        $app = createApp([
+            'paths' => [
+                'base_dir' => '/home/vol1/path/to/htdocs',
+                'root' => '/home/vol1/path/to/htdocs',
+                'runtime' => '/home/vol1/path/to/htdocs/runtime',
+                'assets' => '/home/vol1/path/to/htdocs/app/resources',
+            ]
+        ]);
+
+        defined('DS') or define('DS', DIRECTORY_SEPARATOR);
+
+        $this->assertEquals(DS . 'home' . DS . 'vol1' . DS . 'path' . DS . 'to' . DS . 'htdocs' . DS . 'runtime' . DS . 'views', $app->path->resolve('@runtime/views'));
+    }
 }

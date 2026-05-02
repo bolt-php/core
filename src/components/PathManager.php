@@ -277,7 +277,7 @@ class PathManager extends Component
         foreach ($paths as $path) {
             if (empty($path))
                 continue;
-            $result .= trim($path, '/') . '/';
+            $result .= rtrim($path, '/') . '/';
         }
 
         return substr($result, 0, strlen($result) - 1);

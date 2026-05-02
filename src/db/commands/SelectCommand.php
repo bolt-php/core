@@ -57,7 +57,19 @@ class SelectCommand extends BaseCommand
         }
 
         return $data;
+    }
 
+    protected function transformOne($data)
+    {
+        if ($data === false || $data === null) {
+            return null;
+        }
+
+        if (is_callable($this->transform)) {
+            return ($this->transform)($data);
+        }
+
+        return $data;
     }
 
     public function all()
@@ -70,7 +82,7 @@ class SelectCommand extends BaseCommand
     public function first()
     {
         $sql = $this->sql();
-        return $this->transform($this->conn->execute($sql, $this->params)->fetch());
+        return $this->transformOne($this->conn->execute($sql, $this->params)->fetch());
     }
 
     public function count()
