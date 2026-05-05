@@ -1,5 +1,5 @@
 {
-    "name": "tinyframework/core",
+    "name": "bolt-php/core",
     "type": "framework",
     "keywords": [
         "php",
@@ -17,7 +17,7 @@
     ],
     "require": {
         "php": ">=8.0",
-        "tinyframework/contracts": ">=1.0.2.1"
+        "bolt-php/contracts": ">=1.0.2.1"
     },
     "autoload": {
         "psr-4": {
