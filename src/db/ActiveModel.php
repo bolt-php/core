@@ -4,8 +4,8 @@ namespace framework\db;
 
 use framework\db\commands\DeleteCommand;
 use framework\db\commands\SelectCommand;
-use framework\interfaces\models\BeforeSave;
 use framework\models\attributes\PrimaryKey;
+use framework\models\interfaces\BeforeSave;
 use framework\models\Model;
 
 class ActiveModel extends Model
@@ -79,7 +79,11 @@ class ActiveModel extends Model
         $query->from(static::table());
         $query->where($column, $value);
 
-        return self::from($query->first());
+        $result = $query->first();
+
+        if (empty($result)) return null;
+
+        return self::from($result);
     }
 
     public static function all($columns = null)
