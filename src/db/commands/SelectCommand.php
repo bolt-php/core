@@ -13,6 +13,8 @@ class SelectCommand extends BaseCommand
     protected array $params = [];
     public $transform = null;
     protected array $orders = [];
+    protected ?int $limit = null;
+    protected ?int $offset = null;
 
     use HasTable;
     use HasWhere;
@@ -37,6 +39,8 @@ class SelectCommand extends BaseCommand
             'where' => $this->where,
             'joins' => $this->joins,
             'orders' => $this->orders,
+            'limit' => $this->limit,
+            'offset' => $this->offset,
         ]);
     }
 
@@ -50,6 +54,20 @@ class SelectCommand extends BaseCommand
         return $this;
     }
 
+    public function limit(int $limit, ?int $offset = null): self
+    {
+        $this->limit = $limit;
+        $this->offset = $offset;
+
+        return $this;
+    }
+
+
+    public function offset(?int $offset = null)
+    {
+        $this->offset = $offset;
+        return $this;
+    }
     protected function transform($data)
     {
         if (is_callable($this->transform)) {

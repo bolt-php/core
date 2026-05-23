@@ -81,7 +81,22 @@ class MySqlDriver extends BaseDriver
             $query .= $this->compileOrderBy($components['orders']);
         }
 
+        if (isset($components['limit'])) {
+            $query .= $this->compileLimit($components['limit'], $components['offset'] ?? null);
+        }
+
         return $query;
+    }
+
+    protected function compileLimit(int $limit, ?int $offset = null): string
+    {
+        $sql = " LIMIT {$limit}";
+
+        if ($offset !== null) {
+            $sql .= " OFFSET {$offset}";
+        }
+
+        return $sql;
     }
 
     protected function compileDelete(array $components): string

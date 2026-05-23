@@ -66,6 +66,14 @@ class SqliteDriver extends BaseDriver
 
         $query = $this->compileWhere($query, $components['where']);
 
+        if (!empty($components['orders'])) {
+            $query .= $this->compileOrderBy($components['orders']);
+        }
+
+        if (isset($components['limit'])) {
+            $query .= $this->compileLimit($components['limit'], $components['offset'] ?? null);
+        }
+
         return $query;
     }
 
@@ -122,8 +130,28 @@ class SqliteDriver extends BaseDriver
                 $query .= "{$operator} {$cond['condition']}";
             }
         }
-
         return $query;
+    }
+
+    protected function compileOrderBy(array $orders): string
+    {
+        $orderSql = ' ORDER BY ';
+        $parts = [];
+        foreach ($orders as $order) {
+            $parts[] = "{$order['column']} {$order['direction']}";
+        }
+        return $orderSql . implode(', ', $parts);
+    }
+
+    protected function compileLimit(int $limit, ?int $offset = null): string
+    {
+        $sql = " LIMIT {$limit}";
+
+        if ($offset !== null) {
+            $sql .= " OFFSET {$offset}";
+        }
+
+        return $sql;
     }
 
     public function execute(string $sql, array $params = []): QueryResult
