@@ -2,11 +2,13 @@
 
 namespace framework;
 
+use Exception;
 use framework\contracts\ApplicationInterface;
 use framework\contracts\ComponentInterface;
 use framework\contracts\ExtensionInterface;
 use framework\models\Model;
 use framework\models\transformers\DateTimeTransformer;
+use Override;
 
 /**
  * Base application class
@@ -69,11 +71,6 @@ abstract class Application implements ApplicationInterface
         $this->components[$name] = $component;
     }
 
-    public function registerExtension(string $name, ExtensionInterface $extension): void
-    {
-        $this->components[$name] = $extension;
-    }
-
     /**
      * Magic getter for components
      */
@@ -104,5 +101,71 @@ abstract class Application implements ApplicationInterface
     public function has(string $name): bool
     {
         return array_key_exists($name, $this->components);
+    }
+
+    public function scanModules()
+    {
+        $vendorDir = config('paths.vendor');
+        
+        if (!is_dir($vendorDir)) {
+            return;
+        }
+
+        // Scan vendor directory for packages
+        $vendors = array_filter(glob($vendorDir . '/*'), 'is_dir');
+        
+        foreach ($vendors as $vendorPath) {
+            // Skip special directories
+            if (basename($vendorPath) === 'composer' || basename($vendorPath) === 'bin') {
+                continue;
+            }
+            
+            $packages = array_filter(glob($vendorPath . '/*'), 'is_dir');
+            
+            foreach ($packages as $packagePath) {
+                $composerFile = $packagePath . '/composer.json';
+                
+                if (!file_exists($composerFile)) {
+                    continue;
+                }
+                
+                $composerData = json_decode(file_get_contents($composerFile), true);
+                
+                if (!$composerData || !isset($composerData['extra']['bolt']['providers'])) {
+                    continue;
+                }
+                
+                $providers = $composerData['extra']['bolt']['providers'];
+                
+                if (!is_array($providers)) {
+                    $providers = [$providers];
+                }
+                
+                foreach ($providers as $providerClass) {
+                    if (!class_exists($providerClass)) {
+                        continue;
+                    }
+                    
+                    $provider = new $providerClass();
+                        
+                    if (method_exists($provider, 'boot')) {
+                        $provider->boot($this);
+                    }
+                    else {
+                        throw new Exception("Provider $providerClass does not have a boot method.");
+                    }
+                }
+            }
+        }
+    }
+
+    public function registerRoutes(string $dir): void {
+        throw new Exception("Rotues must be registered within web / console");
+    }
+
+    #[Override]
+    public function registerResources(string $namespace, string $dir): void
+    {
+        throw new \Exception('Resources must be registered within web / console');
     }
 }
