@@ -282,4 +282,8 @@ class PathManager extends Component
 
         return substr($result, 0, strlen($result) - 1);
     }
+
+    public function namespaced($namespace, $path = '') {
+        return $this->join(config("paths.$namespace"), $path);
+    }
 }
