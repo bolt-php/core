@@ -17,7 +17,9 @@
     ],
     "require": {
         "php": ">=8.0",
-        "bolt-php/contracts": ">=1.0.2.1"
+        "bolt-php/contracts": ">=1.1.0",
+        "bolt-php/validation": ">=1.0.2",
+        "bolt-php/database": ">=1.0.0"
     },
     "autoload": {
         "psr-4": {
