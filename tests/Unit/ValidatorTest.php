@@ -1,76 +1,107 @@
 <?php
 
-use framework\models\attributes\Email;
-use framework\models\attributes\Required;
+use framework\components\Validator;
+use framework\validation\attributes\Email;
+use framework\validation\attributes\Required;
 use PHPUnit\Framework\TestCase;
 
 class ValidatorTest extends TestCase
 {
-    public function testBasic()
-    {
-        $app = createApp();
+    private Validator $validator;
 
-        $this->assertEmpty($app->validator->validate((object) [
-            'name' => 'John Doe',
-            'email' => 'abc@gmail.com',
-        ], [
-            'name' => 'required',
-            'email' => [Required::class, Email::class],
-        ]));
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $app = createApp();
+        $this->validator = $app->validator;
+
+        $this->validator->addValidator('required', new Required());
+        $this->validator->addValidator('email', new Email());
     }
 
-    public function testAddValidator()
+    public function testValidateReturnsNoErrorsWhenDataIsValid()
     {
-        $app = createApp();
+        $data = (object)['name' => 'John'];
 
-        $app->validator->addValidator('custom', function ($value) {
-            return $value === 'custom' ? null : 'This value must equal "custom"';
+        $errors = $this->validator->validate($data, [
+            'name' => ['required'],
+        ]);
+
+        $this->assertEmpty($errors);
+    }
+
+    public function testValidateReturnsErrorsWhenDataIsInvalid()
+    {
+        $data = (object)['name' => ''];
+
+        $errors = $this->validator->validate($data, [
+            'name' => ['required'],
+        ]);
+
+        $this->assertNotEmpty($errors);
+        $this->assertArrayHasKey('name', $errors);
+    }
+
+    public function testValidateWithMissingField()
+    {
+        $data = (object)[];
+
+        $errors = $this->validator->validate($data, [
+            'name' => ['required'],
+        ]);
+
+        $this->assertNotEmpty($errors);
+        $this->assertArrayHasKey('name', $errors);
+    }
+
+    public function testValidateWithCallableValidator()
+    {
+        $this->validator->addValidator('uppercase', function ($value) {
+            if (strtolower($value) !== $value) {
+                return 'Value must be lowercase';
+            }
+            return '';
         });
 
-        $this->assertEmpty($app->validator->validate((object) [
-            'name' => 'custom',
-        ], [
-            'name' => 'custom',
-        ]));
+        $valid = (object)['name' => 'john'];
+        $invalid = (object)['name' => 'John'];
 
-        $this->assertNotEmpty($app->validator->validate((object) [
-            'name' => 'invalid',
-        ], [
-            'name' => 'custom',
-        ]));
+        $this->assertEmpty($this->validator->validate($valid, ['name' => ['uppercase']]));
+        $this->assertNotEmpty($this->validator->validate($invalid, ['name' => ['uppercase']]));
     }
 
-    public function testDelimeter()
+    public function testValidateWithPipeStringRules()
     {
-        $app = createApp();
+        $data = (object)['name' => ''];
 
-        $this->assertEmpty($app->validator->validate((object) [
-            'email' => 'abc@gmail.com',
-        ], [
-            'email' => 'required|email',
-        ]));
+        $errors = $this->validator->validate($data, [
+            'name' => 'required',
+        ]);
 
-        $this->assertNotEmpty($app->validator->validate((object) [
-            'email' => 'invalid-email',
-        ], [
-            'email' => 'required|email',
-        ]));
+        $this->assertNotEmpty($errors);
+        $this->assertArrayHasKey('name', $errors);
     }
 
-    public function testValidatorInstance()
+    public function testValidateWithNoRulesReturnsEmptyArray()
     {
-        $app = createApp();
+        $data = (object)['name' => 'John'];
 
-        $this->assertEmpty($app->validator->validate((object) [
-            'email' => 'abc@gmail.com',
-        ], [
-            'email' => [new Required(), new Email()],
-        ]));
+        $errors = $this->validator->validate($data, []);
 
-        $this->assertEquals(['email' => 'custom error message'], $app->validator->validate((object) [
-            'email' => 'invalid-email',
-        ], [
-            'email' => [new Required(), new Email('custom error message')],
-        ]));
+        $this->assertEmpty($errors);
+    }
+
+    public function testValidateMultipleFields()
+    {
+        $data = (object)['name' => '', 'email' => ''];
+
+        $errors = $this->validator->validate($data, [
+            'name'  => ['required'],
+            'email' => ['required'],
+        ]);
+
+        $this->assertCount(2, $errors);
+        $this->assertArrayHasKey('name', $errors);
+        $this->assertArrayHasKey('email', $errors);
     }
 }

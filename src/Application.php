@@ -6,8 +6,6 @@ use Exception;
 use framework\contracts\ApplicationInterface;
 use framework\contracts\ComponentInterface;
 use framework\contracts\ExtensionInterface;
-use framework\models\Model;
-use framework\models\transformers\DateTimeTransformer;
 use Override;
 
 /**
@@ -38,8 +36,6 @@ abstract class Application implements ApplicationInterface
 
     public function init()
     {
-        Model::registerTypeTransformer('DateTime', new DateTimeTransformer());
-
         foreach ($this->components as $key => $component) {
             if ($component instanceof ComponentInterface) {
                 $component->init();
@@ -167,5 +163,11 @@ abstract class Application implements ApplicationInterface
     public function registerResources(string $namespace, string $dir): void
     {
         throw new \Exception('Resources must be registered within web / console');
+    }
+
+    #[Override]
+    public function registerMigrations(string $namespace, string $dir): void
+    {
+        $this->config->set("migrations.$namespace", $dir);
     }
 }

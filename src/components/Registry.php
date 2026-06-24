@@ -15,8 +15,8 @@ class Registry extends Component {
         $this->mp[$key] = $value;
     }
 
-    public function get(string $key) {
-        return $this->mp[$key];
+    public function get(string $key, mixed $default = null) {
+        return $this->mp[$key] ?? $default;
     }
 
     public function has(string $key) {
