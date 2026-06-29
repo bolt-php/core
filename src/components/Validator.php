@@ -13,7 +13,7 @@ class Validator extends Component
         Validation::addValidator($name, $class);
     }
 
-    public function validate(stdClass $data, array $rules): array
+    public function validate($data, array $rules): array
     {
         return Validation::validate($data, $rules);
     }
